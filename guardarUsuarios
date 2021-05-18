@@ -1,0 +1,14 @@
+if columnas[0] == user.id:
+            await client.send_message(chat, "Ya estas dado de alta")
+        else:
+            f.write("ID del Usuario, HASH del Usuario, Nickname, Nombre, Apellido\n")
+
+            stringUsuario = "'{0}', '{1}', '{2}', '{3}', '{4}'".format(
+                user.id,
+                user.access_hash,
+                user.username,
+                user.first_name,
+                user.last_name
+            )
+
+            f.write(stringUsuario + "\n")
