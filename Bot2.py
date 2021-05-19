@@ -199,7 +199,7 @@ async def administrador(event):
     if event.text.__contains__('/send msg -u'):
         await msgUsuario(event)
     if event.text.__contains__('/send msg -c'):
-        await msgCanal(chat)
+        await msgCanal(event,chat)
     if event.text.__contains__('/redirect +'):
         usuarioReenvio = await redirect(event)
         reenviar = True
@@ -225,12 +225,16 @@ async def rename(event):
     await client(functions.account.UpdateProfileRequest(about=nombreNuevo))
 
 
-async def msgCanal(chat):
+async def msgCanal(event,chat):
     result = await client.get_dialogs()
-    for chats in result:
-        mensaje = chats.title + " " + str(chats.id) + "\n"
-    print(chats.title)
-    await client.send_message(chat, mensaje)
+    mensaje = ''
+    canal = event.text.split(' ',4)
+    if canal[3] == '':
+        for chats in result:
+            mensaje = mensaje + chats.title + " " + str(chats.id) + "\n"
+        await client.send_message(chat, mensaje)
+    else:
+        await client.send_message(canal[3], canal[4])
     
 
 async def msgUsuario(event):
