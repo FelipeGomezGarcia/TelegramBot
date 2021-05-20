@@ -1,4 +1,4 @@
-from telethon import TelegramClient, events, functions
+from telethon import TelegramClient, events, functions, Button
 from telethon.tl.functions.messages import GetDialogsRequest
 
 import os, time, shutil
@@ -25,29 +25,43 @@ lista_opciones = {
     "/remove [ID] -> Eliminar el producto con el ID indicado."
 }
 
-@client.on(events.NewMessage)
+@client.on(events.NewMessage(from_users='triple_f_14'))
 async def my_event_handler(event):
     chat= await event.get_input_sender()
+    print(event)
+    print(chat)
     users = await client.get_participants(chat)
     user = users[0]
     if reenviar:
         await client.send_message(usuarioReenvio,event)
+    
     if '/help' == event.text:
         await ayuda(event)
+    
     if '/start' == event.text:
         await start(chat,users)
+    
     if '/list' == event.text:
         await listar(chat,user)
+    
     if event.text.__contains__('/add'):
         await añadir(chat)
     if event.text.__contains__('/id'):
         await productoId(event,chat,user)
     if event.text.__contains__('/nombre'):
         await productoNom(event,chat,user)
-    if event.text.__contains__('/precio'):
-        await productoPvp(event,chat,user)
+    if event.text.__contains__('/enlace'):
+        await productoEnlace(event,chat,user)
+    if event.text.__contains__('/reembolso'):
+        await reembolso(event,chat,user)
+    if event.text.__contains__('/pago'):
+        await metodoPago(event,chat,user)
+    if event.text.__contains__('/tasas'):
+        await tasas(event,chat,user)
+    
     if event.text.__contains__('/edit'):
         await editar(event,chat,user)
+    
     if event.text.__contains__('/remove'):
         await remove(event,chat,user)
 
@@ -125,9 +139,45 @@ async def productoNom (event,chat,user):
     f.write(stringProduc)
     f.close()
 
-    await client.send_message(chat, "Precio del producto? (/precio [PvP])")
+    await client.send_message(chat, "Enlace del producto? (/enlace [URL])")
 
-async def productoPvp (event,chat,user):
+async def productoEnlace (event,chat,user):
+    text = event.text.split(" ", 1)
+    stringProduc = ''
+    
+    f = open("%s\datos\%s.csv" % (os.getcwd(),user.id),"a+",encoding="utf-8")
+    stringProduc = '{0}, '.format(text[1])
+
+    f.write(stringProduc)
+    f.close()
+
+    await client.send_message(chat, "Ofreces el 100'%' de reembolso? (/reembolso [Si/No]")
+
+async def reembolso (event,chat,user):
+    text = event.text.split(" ", 1)
+    stringProduc = ''
+    
+    f = open("%s\datos\%s.csv" % (os.getcwd(),user.id),"a+",encoding="utf-8")
+    stringProduc = '{0}, '.format(text[1])
+
+    f.write(stringProduc)
+    f.close()
+
+    await client.send_message(chat, "Metodo de pago? (/pago [PayPal/Transferencia])")
+
+async def metodoPago (event,chat,user):
+    text = event.text.split(" ", 1)
+    stringProduc = ''
+    
+    f = open("%s\datos\%s.csv" % (os.getcwd(),user.id),"a+",encoding="utf-8")
+    stringProduc = '{0}, '.format(text[1])
+
+    f.write(stringProduc)
+    f.close()
+
+    await client.send_message(chat, "Pagas las tasas de PayPal si las hubiera? (/tasas [Si/No])")
+
+async def tasas (event,chat,user):
     text = event.text.split(" ", 1)
     stringProduc = ''
     
@@ -137,7 +187,7 @@ async def productoPvp (event,chat,user):
     f.write(stringProduc)
     f.close()
 
-    await client.send_message(chat, "Producto correctamente guardado")
+    await client.send_message(chat, "Producto guardado correctamente.")
 
 
 async def editar(event,chat,user):
@@ -184,7 +234,7 @@ async def borrar(user,f,borrarLinia):
     shutil.copy("%s\productos\%s_c.csv" % (os.getcwd(),user.id), "%s\datos\%s.csv" % (os.getcwd(),user.id))
 
 
-@client.on(events.NewMessage)
+@client.on(events.NewMessage(from_users='triple_f_14'))
 async def administrador(event):
     global usuarioReenvio
     global reenviar
@@ -197,7 +247,7 @@ async def administrador(event):
     if event.text.__contains__('/name'):
         await rename(event)
     if event.text.__contains__('/send msg -u'):
-        await msgUsuario(event)
+        await msgUsuario(event,chat)
     if event.text.__contains__('/send msg -c'):
         await msgCanal(event,chat)
     if event.text.__contains__('/redirect +'):
@@ -229,17 +279,24 @@ async def msgCanal(event,chat):
     result = await client.get_dialogs()
     mensaje = ''
     canal = event.text.split(' ',4)
-    if canal[3] == '':
-        for chats in result:
+    
+    for chats in result:
+        if chats.megagroup == True:
             mensaje = mensaje + chats.title + " " + str(chats.id) + "\n"
-        await client.send_message(chat, mensaje)
-    else:
+
+    try:
         await client.send_message(canal[3], canal[4])
+    except:
+        await client.send_message(chat, "El grupo seleccionado no existe o bien no se ha podido enviar el mensaje.\n Prueba a poner la ID de alguno de los siguientes canales:")
+        await client.send_message(chat, mensaje)
     
 
-async def msgUsuario(event):
+async def msgUsuario(event,chat):
     usuario = event.text.split(' ',4)
-    await client.send_message(usuario[3],usuario[4])
+    try:
+        await client.send_message(usuario[3],usuario[4])
+    except:
+        await client.send_message(chat, "No se ha podido enviar el mensaje.\n Pureba poniendo el numero de telefono con el prefijo.")
 
 
 async def redirect(event):
